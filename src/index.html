@@ -35,6 +35,23 @@ limitations under the License.
           <button id="increment">+</button>
           <button id="reset" class="contrast">Reset</button>
         </div>
+        <div role="group">
+          <button id="minimize" class="secondary">Minimize</button>
+          <button id="maximize">Maximize</button>
+          <button id="restore">Restore</button>
+        </div>
+        <div role="group">
+          <button id="moveToCorner">Move to left corner</button>
+        </div>
+        <h4 style="display: flex; justify-content: center;">
+          <label for="resizable">
+            <input type="checkbox" id="resizable" role="switch" checked />
+            Resizable
+          </label>
+        </h4>
+        <h4 style="text-align: center;">
+          Last Moved: <span id="movedTime">Not moved yet</span>
+        </h4>
       </article>
     </main>
   </body>

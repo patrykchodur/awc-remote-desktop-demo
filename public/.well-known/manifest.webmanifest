@@ -8,7 +8,8 @@
   "permissions_policy": {
     "cross-origin-isolated": [
       "self"
-    ]
+    ],
+    "window-management": ["self"]
   },
   "isolated_storage": true,
   "icons": [
