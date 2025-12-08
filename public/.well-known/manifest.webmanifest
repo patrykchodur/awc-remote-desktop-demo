@@ -9,7 +9,9 @@
     "cross-origin-isolated": [
       "self"
     ],
-    "window-management": ["self"]
+    "window-management": [
+      "self"
+    ]
   },
   "isolated_storage": true,
   "icons": [

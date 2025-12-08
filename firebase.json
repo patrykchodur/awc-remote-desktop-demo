@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "your-site",
+    "site": "awc-demo-4a08a808",
     "public": "dist",
     "ignore": [
       "firebase.json",
