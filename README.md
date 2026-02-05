@@ -1,62 +1,48 @@
-# Sample IWA
+# Additional Windowing Controls Demo
 
-<a href="https://studio.firebase.google.com/import?url=https%3A%2F%2Fgithub.com%2Fedman%2Fsample-iwa">
-  <picture>
-    <source
-      media="(prefers-color-scheme: dark)"
-      srcset="https://cdn.firebasestudio.dev/btn/open_dark_32.svg">
-    <source
-      media="(prefers-color-scheme: light)"
-      srcset="https://cdn.firebasestudio.dev/btn/open_light_32.svg">
-    <img
-      height="32"
-      alt="Open in Firebase Studio"
-      src="https://cdn.firebasestudio.dev/btn/open_blue_32.svg">
-  </picture>
-</a>
+This is a demo [Isolated Web App](https://github.com/WICG/isolated-web-apps/) showing the [Additional Windowing Controls API](https://github.com/explainers-by-googlers/additional-windowing-controls).
 
-This is a sample app intended to be used as a base for developing demo IWAs.
+## Additional Windowing Controls API
 
-## Deploying the app
+The Additional Windowing Controls API, still in development as of writing this README, available for standalone Progressive Web Apps and Isolated Web Apps, allows the web apps to manipulate the window in the following ways:
+- Maximize the window - with `window.maximize()`
+- Minimize the window - with `window.minimize()`
+- Restore the window - with `window.restore()`
+- Set whether the window can be resized - with `window.setResizable(bool)`
 
-*   `pnpm run deploy` - builds and deploys the IWA.
+Additionally, the following CSS properties are available
+- `resizable` - boolean property telling whether the window can be resized or not
+- `display-state` - the state in which the window is. One of `normal`, `minimized`, `maximized`, `fullscreen`
 
-The first time you deploy the helper will prompt you to create a new site in
-Firebase Hosting, and will set it up in the code for you.
+Also, the app can detect whether the window has been moved with the new `window.onmove` event. Note: it is possible that the event will be removed for PWAs (see [here](https://github.com/Igalia/explainers/blob/main/onmove-event-handler/README.md) and [here](https://github.com/w3c/csswg-drafts/issues/7693)).
 
-This deploys a static site that you can browse as a normal website or install as
-an IWA "Dev Mode Proxy" at `https://your-site.web.app`.
+To use the API, the app needs to allow the `window-management` permission in the permissions policy. For Isolated Web Apps, this means an appropriate entry in the web manifest (see `public/.well-known/manifest.webmanifest`).
 
-## Releasing IWA bundles
+The API is currently in development and behind a feature flag. To enable it, please use the `chrome://flags#enable-desktop-pwas-additional-windowing-controls`.
 
-*   `pnpm run build:release` - creates a new signed bundle for the IWA in
-    `./releases`.
-*   (optional) `pnpm run deploy` - deploy the IWA and the new bundle.
+## Installing the app
 
-This also updates `./releases/update_manifest.json`.
+This app can be installed with the following update manifest.
+```
+https://awc-demo-4a08a808.web.app/releases/update_manifest.json
+```
+The easiest way to install the app is via the `chrome://web-app-internals` page with the `chrome://flags/#enable-isolated-web-app-dev-mode` flag enabled.
 
-## Installing the IWA
+## Building the app from the source code
 
-### Via dev mode proxy
+To build the signed web bundle, the user needs to create a `.env` file in the project's directory. It can be done with the following command
+```
+cat << EOF > .env                                                                                                                                                                     
+SIGNING_KEY="$(openssl genpkey -algorithm Ed25519)"
+EOF
+```
 
-*   (optional) Deploy the static files with `pnpm run deploy`
-*   Navigate to `chrome://web-app-internals`
-*   Find "Install IWA via Dev Mode Proxy"
-*   Paste in the the addresss to your site `https://your-site.web.app`
+After that, the signed bundle can be built with
+```
+pnpm install && pnpm run build:release
+```
+The signed web bundle will appear in the `dist/releases` directory.
 
-### Via update manifest
+## Feedback and comments on the API
 
-*   (optional) Generate a new release bundle with `pnpm run build:release`
-*   (optional) Deploy the bundle with `pnpm run deploy`
-*   Navigate to `chrome://web-app-internals`
-*   Find "Install IWA from Update Manifest"
-*   Paste in the the addresss to your manifest
-    `https://your-site.web.app/releases/update_manifest.json`
-
-## How is the IWA signed?
-
-When you first open this project in Firebase Studio, the `create-dot-env` hook
-in `.idx/dev.nix` generates a `.env` file.
-
-This `.env` includes the `SIGNING_KEY` used to sign the output IWA bundle.
-Remember to keep this key somewhere safe as it uniquely identifies your IWA.
+Feedback and comments on the API are highly appreciated. Please refer to the [API explainer](https://github.com/explainers-by-googlers/additional-windowing-controls) and create an issue.
