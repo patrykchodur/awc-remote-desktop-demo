@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "awc-demo-4a08a808",
+    "site": "awc-remote-desktop-demo-4a08a808",
     "public": "dist",
     "ignore": [
       "firebase.json",
