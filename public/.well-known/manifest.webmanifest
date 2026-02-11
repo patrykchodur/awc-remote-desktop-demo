@@ -2,7 +2,7 @@
   "id": "/",
   "scope": "/",
   "start_url": "/",
-  "name": "AWC Demo IWA",
+  "name": "AWC Remote Desktop Demo IWA",
   "version": "0.0.0",
   "display": "standalone",
   "permissions_policy": {
@@ -16,7 +16,7 @@
   "isolated_storage": true,
   "icons": [
     {
-      "src": "/images/icon3-512x512.png",
+      "src": "/images/icon4-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

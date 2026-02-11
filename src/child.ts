@@ -1,22 +1,20 @@
-let childWindow: Window | null = null;
-
 const statusElement = document.querySelector<HTMLSpanElement>('#status')!;
 const restored = () => {
   statusElement.textContent = 'Restored';
-  childWindow?.postMessage({type: 'RESTORE'});
+  window.opener.postMessage({type: 'RESTORE'});
 };
 const minimized = () => {
   statusElement.textContent = 'Minimized';
-  childWindow?.postMessage({type: 'MINIMIZE'});
+  window.opener.postMessage({type: 'MINIMIZE'});
 };
 const maximized = () => {
   statusElement.textContent = 'Maximized';
-  childWindow?.postMessage({type: 'MAXIMIZE'});
+  window.opener.postMessage({type: 'MAXIMIZE'});
 };
 
 const fullscreen = () => {
   statusElement.textContent = 'Fullscreen';
-  childWindow?.postMessage({type: 'FULLSCREEN'});
+  window.opener.postMessage({type: 'FULLSCREEN'});
 };
 
 export const WindowState = {
@@ -80,12 +78,24 @@ window.matchMedia('(display-state: fullscreen)').addEventListener('change', (e) 
   }
 });
 
-const spawnElement = document.querySelector<HTMLButtonElement>('#spawnWindow')!;
-spawnElement.addEventListener('click', async () => {
-  childWindow = window.open(
-    '/child.html',
-    undefined,
-    `width=${window.innerWidth},height=${window.innerHeight}`)!;
+
+
+
+
+
+
+
+
+document.querySelector<HTMLButtonElement>('#minimize')!.addEventListener('click', async () => {
+  await(window as any).minimize();
+});
+
+document.querySelector<HTMLButtonElement>('#maximize')!.addEventListener('click', async () => {
+  await (window as any).maximize();
+});
+
+document.querySelector<HTMLButtonElement>('#restore')!.addEventListener('click', async () => {
+  await (window as any).restore();
 });
 
 const resizableElement = document.querySelector<HTMLInputElement>('#resizable')!;
@@ -97,13 +107,13 @@ const movedTimeElement = document.querySelector<HTMLSpanElement>('#movedTime')!;
 const updateTimeMoved = () => {
   movedTimeElement.textContent = Date().toLocaleString();
 }
-const childXElement = document.querySelector<HTMLInputElement>('#childX')!;
-const childYElement = document.querySelector<HTMLInputElement>('#childY')!;
+(window as any).onmove = () => updateTimeMoved();
 
-(window as any).onmove = () => {
-  updateTimeMoved();
-  childWindow?.postMessage({ type: 'MOVE', screenX: window.screenX + childXElement.valueAsNumber, screenY: window.screenY + childYElement.valueAsNumber });
-}
+
+
+
+
+
 
 window.addEventListener('message', (event) => {
   console.log('Got message!');
@@ -111,10 +121,6 @@ window.addEventListener('message', (event) => {
   switch (data.type) {
     case 'MOVE': {
       window.moveTo(data.screenX, data.screenY);
-      break;
-    }
-    case 'WAS_MOVED': {
-      window.moveTo(data.screenX - childXElement.valueAsNumber, data.screenY - childYElement.valueAsNumber);
       break;
     }
     case 'MINIMIZE': {
@@ -136,4 +142,12 @@ window.addEventListener('message', (event) => {
   }
 });
 
+(window as any).onmove = () => {
+    updateTimeMoved();
+    window.opener.postMessage({ type: 'WAS_MOVED', screenX: window.screenX, screenY: window.screenY});
+}
+
+
+
 // testing
+

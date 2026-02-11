@@ -19,30 +19,24 @@ limitations under the License.
   <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="/style.css" />
-    <script type="module" defer src="/index.ts"></script>
+    <script type="module" defer src="/child.ts"></script>
     <link rel="manifest" href="/.well-known/manifest.webmanifest" />
   </head>
 
   <body>
     <main class="container">
-      <h2 style="text-align: center;">AWC Demo - Main App</h2>
+      <h2 style="text-align: center;">AWC Demo - Child App</h2>
       <article>
         <h4 style="text-align: center;">
           Status: <span id="status">Normal</span>
         </h4>
         <div role="group">
-          <button id="spawnWindow">Open Remote Window</button> 
+          <button id="minimize" class="secondary">Minimize</button>
+          <button id="maximize">Maximize</button>
+          <button id="restore">Restore</button>
         </div>
         <div role="group">
-          <div class="input-wrapper" style="display:flex; flex-direction: column; align-items: center;">
-            <input type="number" id="childX" value="100" placeholder="0" style="text-align: center; width: 120px;"/>
-            <label for="childX" style="display: flex; justify-content: center;">X Offset</label>
-          </div>
-
-          <div class="input-wrapper" style="display:flex; flex-direction: column; align-items: center;">
-            <input type="number" id="childY" value="100" placeholder="0" style="text-align: center; width: 120px;"/>
-            <label for="childY" style="display: flex; justify-content: center;">Y Offset</label>
-          </div>
+          <button id="moveToCorner">Move to left corner</button> 
         </div>
         <h4 style="display: flex; justify-content: center;">
           <label for="resizable">
