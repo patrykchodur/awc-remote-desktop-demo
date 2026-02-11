@@ -1,6 +1,6 @@
-# Additional Windowing Controls Demo
+# Additional Windowing Controls Remote Desktop Demo
 
-This is a demo [Isolated Web App](https://github.com/WICG/isolated-web-apps/) showing the [Additional Windowing Controls API](https://github.com/explainers-by-googlers/additional-windowing-controls).
+This is a demo [Isolated Web App](https://github.com/WICG/isolated-web-apps/) showing the [Additional Windowing Controls API](https://github.com/explainers-by-googlers/additional-windowing-controls) usage with the remote desktop applications.
 
 ## Additional Windowing Controls API
 
@@ -24,7 +24,7 @@ The API is currently in development and behind a feature flag. To enable it, ple
 
 This app can be installed with the following update manifest.
 ```
-https://awc-demo-4a08a808.web.app/releases/update_manifest.json
+https://awc-remote-desktop-demo-18d82a7c.web.app/releases/update_manifest.json
 ```
 The easiest way to install the app is via the `chrome://web-app-internals` page with the `chrome://flags/#enable-isolated-web-app-dev-mode` flag enabled.
 
