@@ -64,6 +64,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(__dirname, "src/index.html"),
+        child: resolve(__dirname, "src/child.html"),
       },
     },
   },
