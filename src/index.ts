@@ -1,84 +1,33 @@
+import { AWCController } from './awc-controller';
+
 let childWindow: Window | null = null;
+const controller = new AWCController();
 
 const statusElement = document.querySelector<HTMLSpanElement>('#status')!;
-const restored = () => {
+controller.onRestore = () => {
   statusElement.textContent = 'Restored';
+};
+controller.onExternalRestore = () => {
   childWindow?.postMessage({type: 'RESTORE'});
 };
-const minimized = () => {
+controller.onMinimize = () => {
   statusElement.textContent = 'Minimized';
+};
+controller.onExternalMinimize = () => {
   childWindow?.postMessage({type: 'MINIMIZE'});
 };
-const maximized = () => {
+controller.onMaximize = () => {
   statusElement.textContent = 'Maximized';
+};
+controller.onExternalMaximize = () => {
   childWindow?.postMessage({type: 'MAXIMIZE'});
 };
-
-const fullscreen = () => {
+controller.onFullscreen = () => {
   statusElement.textContent = 'Fullscreen';
+};
+controller.onExternalFullscreen = () => {
   childWindow?.postMessage({type: 'FULLSCREEN'});
 };
-
-export const WindowState = {
-  Normal: 0,
-  Minimized: 1,
-  Maximized: 2,
-  Fullscreen: 3
-} as const;
-
-export type WindowState = (typeof WindowState)[keyof typeof WindowState];
-
-const windowStateChange = (oldState: WindowState, newState: WindowState) => {
-  switch (newState) {
-    case WindowState.Normal: {
-      restored();
-      break;
-    }
-    case WindowState.Fullscreen: {
-      fullscreen();
-      break;
-    }
-    case WindowState.Minimized: {
-      minimized();
-      break;
-    }
-    case WindowState.Maximized: {
-      if (oldState === WindowState.Minimized || oldState === WindowState.Fullscreen) {
-        restored();
-      } else {
-        maximized();
-      }
-      break;
-    }
-  }
-}
-
-let previousState: WindowState = WindowState.Normal;
-
-window.matchMedia('(display-state: normal)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Normal);
-    previousState = WindowState.Normal;
-  }
-});
-window.matchMedia('(display-state: maximized)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Maximized);
-    previousState = WindowState.Maximized;
-  }
-});
-window.matchMedia('(display-state: minimized)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Minimized);
-    previousState = WindowState.Minimized;
-  }
-});
-window.matchMedia('(display-state: fullscreen)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Fullscreen);
-    previousState = WindowState.Fullscreen;
-  }
-});
 
 const spawnElement = document.querySelector<HTMLButtonElement>('#spawnWindow')!;
 spawnElement.addEventListener('click', async () => {
@@ -100,8 +49,10 @@ const updateTimeMoved = () => {
 const childXElement = document.querySelector<HTMLInputElement>('#childX')!;
 const childYElement = document.querySelector<HTMLInputElement>('#childY')!;
 
-(window as any).onmove = () => {
+controller.onMove = () => {
   updateTimeMoved();
+}
+controller.onExternalMove = () => {
   childWindow?.postMessage({ type: 'MOVE', screenX: window.screenX + childXElement.valueAsNumber, screenY: window.screenY + childYElement.valueAsNumber });
 }
 
@@ -110,27 +61,27 @@ window.addEventListener('message', (event) => {
   const data = event.data;
   switch (data.type) {
     case 'MOVE': {
-      window.moveTo(data.screenX, data.screenY);
+      controller.moveTo(data.screenX, data.screenY);
       break;
     }
     case 'WAS_MOVED': {
-      window.moveTo(data.screenX - childXElement.valueAsNumber, data.screenY - childYElement.valueAsNumber);
+      controller.moveTo(data.screenX - childXElement.valueAsNumber, data.screenY - childYElement.valueAsNumber);
       break;
     }
     case 'MINIMIZE': {
-      (window as any).minimize();
+      controller.minimize();
       break;
     }
     case 'MAXIMIZE': {
-      (window as any).maximize();
+      controller.maximize();
       break;
     }
     case 'FULLSCREEN': {
-      document.documentElement.requestFullscreen();
+      controller.fullscreen(document.documentElement);
       break;
     }
     case 'RESTORE': {
-      (window as any).restore();
+      controller.restore();
       break;
     }
   }

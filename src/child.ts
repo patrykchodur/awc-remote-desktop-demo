@@ -1,153 +1,87 @@
+import { AWCController } from './awc-controller';
+
+const controller = new AWCController();
+
 const statusElement = document.querySelector<HTMLSpanElement>('#status')!;
-const restored = () => {
+controller.onRestore = () => {
   statusElement.textContent = 'Restored';
+};
+controller.onExternalRestore = () => {
   window.opener.postMessage({type: 'RESTORE'});
 };
-const minimized = () => {
+controller.onMinimize = () => {
   statusElement.textContent = 'Minimized';
+};
+controller.onExternalMinimize = () => {
   window.opener.postMessage({type: 'MINIMIZE'});
 };
-const maximized = () => {
+controller.onMaximize = () => {
   statusElement.textContent = 'Maximized';
+};
+controller.onExternalMaximize = () => {
   window.opener.postMessage({type: 'MAXIMIZE'});
 };
 
-const fullscreen = () => {
+controller.onFullscreen = () => {
   statusElement.textContent = 'Fullscreen';
+};
+controller.onExternalFullscreen = () => {
   window.opener.postMessage({type: 'FULLSCREEN'});
 };
 
-export const WindowState = {
-  Normal: 0,
-  Minimized: 1,
-  Maximized: 2,
-  Fullscreen: 3
-} as const;
-
-export type WindowState = (typeof WindowState)[keyof typeof WindowState];
-
-const windowStateChange = (oldState: WindowState, newState: WindowState) => {
-  switch (newState) {
-    case WindowState.Normal: {
-      restored();
-      break;
-    }
-    case WindowState.Fullscreen: {
-      fullscreen();
-      break;
-    }
-    case WindowState.Minimized: {
-      minimized();
-      break;
-    }
-    case WindowState.Maximized: {
-      if (oldState === WindowState.Minimized || oldState === WindowState.Fullscreen) {
-        restored();
-      } else {
-        maximized();
-      }
-      break;
-    }
-  }
-}
-
-let previousState: WindowState = WindowState.Normal;
-
-window.matchMedia('(display-state: normal)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Normal);
-    previousState = WindowState.Normal;
-  }
-});
-window.matchMedia('(display-state: maximized)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Maximized);
-    previousState = WindowState.Maximized;
-  }
-});
-window.matchMedia('(display-state: minimized)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Minimized);
-    previousState = WindowState.Minimized;
-  }
-});
-window.matchMedia('(display-state: fullscreen)').addEventListener('change', (e) => {
-  if (e.matches) {
-    windowStateChange(previousState, WindowState.Fullscreen);
-    previousState = WindowState.Fullscreen;
-  }
-});
-
-
-
-
-
-
-
-
 
 document.querySelector<HTMLButtonElement>('#minimize')!.addEventListener('click', async () => {
-  await(window as any).minimize();
+  await controller.minimize();
 });
 
 document.querySelector<HTMLButtonElement>('#maximize')!.addEventListener('click', async () => {
-  await (window as any).maximize();
+  await controller.maximize();
 });
 
 document.querySelector<HTMLButtonElement>('#restore')!.addEventListener('click', async () => {
-  await (window as any).restore();
+  await controller.restore();
 });
 
 const resizableElement = document.querySelector<HTMLInputElement>('#resizable')!;
 resizableElement.addEventListener('change', () => {
-  (window as any).setResizable(resizableElement.checked);
+   controller.setResizable(resizableElement.checked);
 })
 
 const movedTimeElement = document.querySelector<HTMLSpanElement>('#movedTime')!;
 const updateTimeMoved = () => {
   movedTimeElement.textContent = Date().toLocaleString();
 }
-(window as any).onmove = () => updateTimeMoved();
-
-
-
-
-
-
+controller.onMove = () => updateTimeMoved();
+controller.onExternalMove = () => {
+  window.opener.postMessage({ type: 'WAS_MOVED', screenX: window.screenX, screenY: window.screenY});
+}
 
 window.addEventListener('message', (event) => {
-  console.log('Got message!');
   const data = event.data;
   switch (data.type) {
     case 'MOVE': {
-      window.moveTo(data.screenX, data.screenY);
+      controller.moveTo(data.screenX, data.screenY);
       break;
     }
     case 'MINIMIZE': {
-      (window as any).minimize();
+      controller.minimize();
       break;
     }
     case 'MAXIMIZE': {
-      (window as any).maximize();
+      controller.maximize();
       break;
     }
     case 'FULLSCREEN': {
-      document.documentElement.requestFullscreen();
+      controller.fullscreen(document.documentElement);
       break;
     }
     case 'RESTORE': {
-      (window as any).restore();
+      console.log("pchodur - restored");
+      controller.restore();
       break;
     }
   }
 });
-
-(window as any).onmove = () => {
-    updateTimeMoved();
-    window.opener.postMessage({ type: 'WAS_MOVED', screenX: window.screenX, screenY: window.screenY});
-}
-
-
 
 // testing
 
