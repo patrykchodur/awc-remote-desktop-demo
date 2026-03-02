@@ -3,107 +3,102 @@ export const WindowState = {
   Minimized: 'MINIMIZED',
   Maximized: 'MAXIMIZED',
   Fullscreen: 'FULLSCREEN',
-} as const;
-
-export type WindowState = (typeof WindowState)[keyof typeof WindowState];
-
-type OperationType = 'MINIMIZE' | 'MAXIMIZE' | 'RESTORE' | 'FULLSCREEN' | 'MOVE' | 'RESIZABLE';
+};
 
 export class AWCController {
-  public onMinimize: (() => void) | null = null;
-  public onMaximize: (() => void) | null = null;
-  public onRestore: (() => void) | null = null;
-  public onFullscreen: (() => void) | null = null;
-  public onMove: (() => void) | null = null;
-  public onResizableChange: ((resizable: boolean) => void) | null = null;
+  onMinimize = null;
+  onMaximize = null;
+  onRestore = null;
+  onFullscreen = null;
+  onMove = null;
+  onResizableChange = null;
 
-  public onExternalMinimize: (() => void) | null = null;
-  public onExternalMaximize: (() => void) | null = null;
-  public onExternalRestore: (() => void) | null = null;
-  public onExternalFullscreen: (() => void) | null = null;
-  public onExternalMove: (() => void) | null = null;
-  public onExternalResizableChange: ((resizable: boolean) => void) | null = null;
+  onExternalMinimize = null;
+  onExternalMaximize = null;
+  onExternalRestore = null;
+  onExternalFullscreen = null;
+  onExternalMove = null;
+  onExternalResizableChange = null;
 
-  private lastEventPromise: Promise<void> = Promise.resolve();
-  private currentWindowState: WindowState;
-  private currentResizableState: boolean;
-  private pendingOperation: OperationType | null = null;
-  private pendingOpTimeout: number | null = null;
-  private moveHandler = () => this.windowMoved();
-  private mediaQueryCleanups: (() => void)[] = [];
+  lastEventPromise = Promise.resolve();
+  currentWindowState;
+  currentResizableState;
+  pendingOperation = null;
+  pendingOpTimeout = null;
+  moveHandler = () => this.windowMoved();
+  mediaQueryCleanups = [];
 
-  public constructor() {
+  constructor() {
     this.currentWindowState = this.getCurrentWindowState();
     this.currentResizableState = this.getCurrentResizableState();
     this.registerDisplayStateHandler();
   }
 
-  public dispose() {
+  dispose() {
     window.removeEventListener('move', this.moveHandler);
     this.mediaQueryCleanups.forEach(cleanup => cleanup());
   }
 
-  public minimize(): Promise<void> {
+  minimize() {
     return this.scheduleNextOperation(async () => {
       this.setPendingOp('MINIMIZE');
-      await (window as any).minimize();
+      await window.minimize();
     });
   }
 
-  public maximize(): Promise<void> {
+  maximize() {
     return this.scheduleNextOperation(async () => {
       this.setPendingOp('MAXIMIZE');
-      await (window as any).maximize();
+      await window.maximize();
     });
   }
 
-  public restore(): Promise<void> {
+  restore() {
     return this.scheduleNextOperation(async () => {
       this.setPendingOp('RESTORE');
-      await (window as any).restore();
+      await window.restore();
     });
   }
 
-  public fullscreen(element: Element): Promise<void> {
+  fullscreen(element) {
     return this.scheduleNextOperation(async () => {
       this.setPendingOp('FULLSCREEN');
       await element.requestFullscreen();
     });
   }
 
-  public moveTo(x: number, y: number): Promise<void> {
+  moveTo(x, y) {
     return this.scheduleNextOperation(async () => {
       this.setPendingOp('MOVE');
-      window.moveTo(x, y); 
+      window.moveTo(x, y);
     });
   }
 
-  public moveBy(deltaX: number, deltaY: number): Promise<void> {
+  moveBy(deltaX, deltaY) {
     return this.scheduleNextOperation(async () => {
       this.setPendingOp('MOVE');
       window.moveBy(deltaX, deltaY);
     });
   }
 
-  public setResizable(canResize: boolean): Promise<void> {
+  setResizable(canResize) {
     return this.scheduleNextOperation(async () => {
       this.setPendingOp('RESIZABLE');
-      await (window as any).setResizable(canResize);
+      await window.setResizable(canResize);
     });
   }
 
-  private isProgrammatic (expected: OperationType) {
+  isProgrammatic(expected) {
     if (this.pendingOperation === expected) {
       this.pendingOperation = null;
       if (this.pendingOpTimeout) clearTimeout(this.pendingOpTimeout);
       return true;
     }
     return false;
-  };
+  }
 
-  private windowStateChanged(oldState: WindowState, newState: WindowState) {
-    if (oldState === newState)
-      return;
+  windowStateChanged(oldState, newState) {
+    if (oldState === newState) return;
 
     switch (newState) {
       case WindowState.Normal: {
@@ -144,7 +139,7 @@ export class AWCController {
     }
   }
 
-  private windowMoved() {
+  windowMoved() {
     this.onMove?.();
 
     if (!this.isProgrammatic('MOVE')) {
@@ -152,7 +147,7 @@ export class AWCController {
     }
   }
 
-  private resizableChanged(resizable: boolean) {
+  resizableChanged(resizable) {
     if (this.currentResizableState == resizable) {
       return;
     }
@@ -165,14 +160,14 @@ export class AWCController {
     this.currentResizableState = resizable;
   }
 
-  private scheduleNextOperation(operation: () => Promise<void>) : Promise<void> {
+  scheduleNextOperation(operation) {
     const previousTask = this.lastEventPromise.catch(() => { });
     const currentTaskPromise = previousTask.then(() => operation());
     this.lastEventPromise = currentTaskPromise;
     return currentTaskPromise;
   }
 
-  private getCurrentWindowState() : WindowState {
+  getCurrentWindowState() {
     if (window.matchMedia('(display-state: normal)').matches) {
       return WindowState.Normal;
     } else if (window.matchMedia('(display-state: minimized)').matches) {
@@ -185,7 +180,7 @@ export class AWCController {
     throw new Error("Error figuring out the current window state");
   }
 
-  private getCurrentResizableState() : boolean {
+  getCurrentResizableState() {
     if (window.matchMedia('(resizable: true)').matches) {
       return true;
     } else if (window.matchMedia('(resizable: false)').matches) {
@@ -194,10 +189,10 @@ export class AWCController {
     throw new Error("Error figuring out the resizable state");
   }
 
-  private registerDisplayStateHandler() {
-    const bindState = (mediaQuery: string, state: WindowState) => {
+  registerDisplayStateHandler() {
+    const bindState = (mediaQuery, state) => {
       const mq = window.matchMedia(mediaQuery);
-      const listener = (e: MediaQueryListEvent) => {
+      const listener = (e) => {
         if (e.matches) {
           this.windowStateChanged(this.currentWindowState, state);
           this.currentWindowState = state;
@@ -213,13 +208,13 @@ export class AWCController {
     bindState('(display-state: maximized)', WindowState.Maximized);
     bindState('(display-state: fullscreen)', WindowState.Fullscreen);
 
-    const bindResizable = (mediaQuery: string, val: boolean) => {
-        const mq = window.matchMedia(mediaQuery);
-        const listener = (e: MediaQueryListEvent) => {
-            if (e.matches) this.resizableChanged(val);
-        };
-        mq.addEventListener('change', listener);
-        this.mediaQueryCleanups.push(() => mq.removeEventListener('change', listener));
+    const bindResizable = (mediaQuery, val) => {
+      const mq = window.matchMedia(mediaQuery);
+      const listener = (e) => {
+        if (e.matches) this.resizableChanged(val);
+      };
+      mq.addEventListener('change', listener);
+      this.mediaQueryCleanups.push(() => mq.removeEventListener('change', listener));
     };
 
     bindResizable('(resizable: true)', true);
@@ -228,9 +223,9 @@ export class AWCController {
     window.addEventListener('move', this.moveHandler);
   }
 
-  private setPendingOp(op: OperationType) {
+  setPendingOp(op) {
     this.pendingOperation = op;
-    
+
     if (this.pendingOpTimeout) clearTimeout(this.pendingOpTimeout);
 
     this.pendingOpTimeout = window.setTimeout(() => {
