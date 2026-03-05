@@ -34,7 +34,7 @@ if (process.env.BUILD_TYPE === "release") {
     ...wbn({
       baseURL: new wbnSign.WebBundleId(key).serializeWithIsolatedWebAppOrigin(),
       static: { dir: "public" },
-      output: "additional-windowing-controls-demo.swbn",
+      output: "awc-remote-desktop-demo.swbn",
       integrityBlockSign: {
         strategy: new wbnSign.NodeCryptoSigningStrategy(key),
       },
@@ -93,7 +93,7 @@ function setWebManifestVersion() {
       // 2. FIX: If folder exists but is empty, start at 1.0.0
       if (bundles.length === 0) return setVersion("1.0.0");
 
-      const versions = bundles.map((f) => f.replace("additional-windowing-controls-demo_", "").replace(".swbn", ""));
+      const versions = bundles.map((f) => f.replace("awc-remote-desktop-demo_", "").replace(".swbn", ""));
 
       const sortedVersions = versions
         .map((v) => v.split(".").map((k) => parseInt(k)))
@@ -110,7 +110,7 @@ function setWebManifestVersion() {
   } satisfies PluginOption;
 }
 
-// Copies ./dist/additional-windowing-controls-demo.swbn to ./releases/additional-windowing-controls-demo_<version>.swbn.
+// Copies ./dist/awc-remote-desktop-demo.swbn to ./releases/awc-remote-desktop-demo_<version>.swbn.
 function copyBundleToReleases() {
   return {
     name: "iwa:copy-bundle-to-release",
@@ -125,8 +125,8 @@ function copyBundleToReleases() {
       // At this stage, the manifest version is still the "Build Version" (e.g., 1.0.5)
       // because the reset logic in the other plugin's closeBundle hasn't run yet.
 
-      const source = "dist/additional-windowing-controls-demo.swbn";
-      const dest = `releases/additional-windowing-controls-demo_${manifest.version}.swbn`;
+      const source = "dist/awc-remote-desktop-demo.swbn";
+      const dest = `releases/awc-remote-desktop-demo_${manifest.version}.swbn`;
 
       // Optional: Check if source exists to avoid crashing if the build failed silently
       if (fs.existsSync(source)) {
@@ -149,7 +149,7 @@ function generateUpdateManifest() {
       const bundles = fs.readdirSync("releases").filter((f) => f.endsWith(".swbn"));
       const versions = bundles.map((file) => {
         return {
-          version: file.replace("additional-windowing-controls-demo_", "").replace(".swbn", ""),
+          version: file.replace("awc-remote-desktop-demo_", "").replace(".swbn", ""),
           src: `https://${firebase_json.hosting.site}.web.app/releases/${file}`,
         };
       });
