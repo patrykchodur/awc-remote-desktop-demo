@@ -6,6 +6,7 @@ export const WindowState = {
 };
 
 export class AWCController {
+  /* State change events - both user-initiated and from the API */
   onMinimize = null;
   onMaximize = null;
   onRestore = null;
@@ -13,6 +14,7 @@ export class AWCController {
   onMove = null;
   onResizableChange = null;
 
+  /* User-initiated (or OS-initiated) state change events */
   onExternalMinimize = null;
   onExternalMaximize = null;
   onExternalRestore = null;
@@ -20,6 +22,7 @@ export class AWCController {
   onExternalMove = null;
   onExternalResizableChange = null;
 
+  /* Private variables */
   lastEventPromise = Promise.resolve();
   currentWindowState;
   currentResizableState;
@@ -28,6 +31,7 @@ export class AWCController {
   moveHandler = () => this.windowMoved();
   mediaQueryCleanups = [];
 
+  /* Public methods */
   constructor() {
     this.currentWindowState = this.getCurrentWindowState();
     this.currentResizableState = this.getCurrentResizableState();
@@ -88,6 +92,7 @@ export class AWCController {
     });
   }
 
+  /* Private methods */
   isProgrammatic(expected) {
     if (this.pendingOperation === expected) {
       this.pendingOperation = null;
