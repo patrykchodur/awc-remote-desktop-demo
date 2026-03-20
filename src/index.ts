@@ -44,7 +44,17 @@ resizableElement.addEventListener('change', () => {
 
 const movedTimeElement = document.querySelector<HTMLSpanElement>('#movedTime')!;
 const updateTimeMoved = () => {
-  movedTimeElement.textContent = Date().toLocaleString();
+  const now = new Date();
+
+  movedTimeElement.textContent = now.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    fractionalSecondDigits: 3
+  } as Intl.DateTimeFormatOptions & { fractionalSecondDigits: number });
 }
 const childXElement = document.querySelector<HTMLInputElement>('#childX')!;
 const childYElement = document.querySelector<HTMLInputElement>('#childY')!;
