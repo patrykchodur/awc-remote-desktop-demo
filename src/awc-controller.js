@@ -11,7 +11,12 @@ export class AWCController {
   onMaximize = null;
   onRestore = null;
   onFullscreen = null;
+  // onMove is called on every frame during a window drag.
   onMove = null;
+  // onMoveStarted is called when the drag has begun.
+  onMoveStarted = null;
+  // onMoveEnded is called when the drag has ended.
+  onMoveEnded = null;
   onResizableChange = null;
 
   /* User-initiated (or OS-initiated) state change events */
@@ -20,6 +25,8 @@ export class AWCController {
   onExternalRestore = null;
   onExternalFullscreen = null;
   onExternalMove = null;
+  onExternalMoveStarted = null;
+  onExternalMoveEnded = null;
   onExternalResizableChange = null;
 
   /* Private variables */
@@ -28,8 +35,16 @@ export class AWCController {
   currentResizableState;
   pendingOperation = null;
   pendingOpTimeout = null;
-  moveHandler = () => this.windowMoved();
   mediaQueryCleanups = [];
+  /* Detecting window move */
+  continuePollingWindowPosition = false;
+  lastX = 0;
+  lastY = 0;
+  duringMove = false;
+  animationId = null;
+  requestAnimationCallback = () => this.pollWindowPosition();
+  isCurrentMoveProgrammatic = false;
+
 
   /* Public methods */
   constructor() {
@@ -39,7 +54,7 @@ export class AWCController {
   }
 
   dispose() {
-    window.removeEventListener('move', this.moveHandler);
+    this.stopMovePolling();
     this.mediaQueryCleanups.forEach(cleanup => cleanup());
   }
 
@@ -147,8 +162,24 @@ export class AWCController {
   windowMoved() {
     this.onMove?.();
 
-    if (!this.isProgrammatic('MOVE')) {
+    if (!this.isCurrentMoveProgrammatic) {
       this.onExternalMove?.();
+    }
+  }
+
+  windowMoveStarted() {
+    this.onMoveStarted?.();
+
+    if (!this.isCurrentMoveProgrammatic) {
+      this.onExternalMoveStarted?.();
+    }
+  }
+
+  windowMoveEnded() {
+    this.onMoveEnded?.();
+
+    if (!this.isCurrentMoveProgrammatic) {
+      this.onExternalMoveEnded?.();
     }
   }
 
@@ -225,7 +256,64 @@ export class AWCController {
     bindResizable('(resizable: true)', true);
     bindResizable('(resizable: false)', false);
 
-    window.addEventListener('move', this.moveHandler);
+    const focusListener = () => this.startMovePolling();
+    const blurListener = () => this.stopMovePolling();
+
+    window.addEventListener('focus', focusListener);
+    if (document.hasFocus()) {
+      this.startMovePolling();
+    }
+    window.addEventListener('blur', blurListener);
+    this.mediaQueryCleanups.push(() => {
+      window.removeEventListener('focus', focusListener);
+      window.removeEventListener('blur', blurListener);
+    });
+  }
+
+  startMovePolling() {
+    if (this.continuePollingWindowPosition) {
+      return;
+    }
+    this.lastX = window.screenX;
+    this.lastY = window.screenY;
+    this.continuePollingWindowPosition = true;
+    this.animationId = requestAnimationFrame(this.requestAnimationCallback);
+  }
+
+  stopMovePolling() {
+    this.continuePollingWindowPosition = false;
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+    }
+    if (this.duringMove) {
+      this.windowMoveEnded();
+      this.duringMove = false;
+      this.isCurrentMoveProgrammatic = false;
+    }
+  }
+
+  pollWindowPosition() {
+    if (!this.continuePollingWindowPosition) {
+      return;
+    }
+    const currentX = window.screenX;
+    const currentY = window.screenY;
+    if (currentX !== this.lastX || currentY !== this.lastY) {
+      if (!this.duringMove) {
+        this.isCurrentMoveProgrammatic = this.isProgrammatic('MOVE');
+        this.windowMoveStarted();
+        this.duringMove = true;
+      }
+      this.lastX = currentX;
+      this.lastY = currentY;
+      this.windowMoved();
+    } else if (this.duringMove) {
+        this.windowMoveEnded();
+        this.duringMove = false;
+      this.isCurrentMoveProgrammatic = false;
+    }
+
+    this.animationId = requestAnimationFrame(this.requestAnimationCallback);
   }
 
   setPendingOp(op) {

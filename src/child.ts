@@ -47,12 +47,14 @@ resizableElement.addEventListener('change', () => {
    controller.setResizable(resizableElement.checked);
 })
 
-const movedTimeElement = document.querySelector<HTMLSpanElement>('#movedTime')!;
-const updateTimeMoved = () => {
-  movedTimeElement.textContent = Date().toLocaleString();
+const duringMoveElement = document.querySelector<HTMLSpanElement>('#duringMove')!;
+controller.onMoveStarted = () => {
+  duringMoveElement.textContent = "True";
 }
-controller.onMove = () => updateTimeMoved();
-controller.onExternalMove = () => {
+controller.onMoveEnded = () => {
+  duringMoveElement.textContent = "False";
+}
+controller.onExternalMoveEnded = () => {
   window.opener.postMessage({ type: 'WAS_MOVED', screenX: window.screenX, screenY: window.screenY});
 }
 

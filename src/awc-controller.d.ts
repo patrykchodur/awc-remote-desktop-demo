@@ -13,6 +13,8 @@ export declare class AWCController {
   onRestore: (() => void) | null;
   onFullscreen: (() => void) | null;
   onMove: (() => void) | null;
+  onMoveStarted: (() => void) | null;
+  onMoveEnded: (() => void) | null;
   onResizableChange: ((resizable: boolean) => void) | null;
 
   onExternalMinimize: (() => void) | null;
@@ -20,6 +22,8 @@ export declare class AWCController {
   onExternalRestore: (() => void) | null;
   onExternalFullscreen: (() => void) | null;
   onExternalMove: (() => void) | null;
+  onExternalMoveStarted: (() => void) | null;
+  onExternalMoveEnded: (() => void) | null;
   onExternalResizableChange: ((resizable: boolean) => void) | null;
 
   private lastEventPromise;
@@ -27,8 +31,14 @@ export declare class AWCController {
   private currentResizableState;
   private pendingOperation;
   private pendingOpTimeout;
-  private moveHandler;
   private mediaQueryCleanups;
+  private continuePollingWindowPosition;
+  private lastX;
+  private lastY;
+  private duringMove;
+  private animationId;
+  private requestAnimationCallback;
+  private isCurrentMoveProgrammatic;
 
   constructor();
 
@@ -45,10 +55,15 @@ export declare class AWCController {
   private isProgrammatic;
   private windowStateChanged;
   private windowMoved;
+  private windowMoveStarted;
+  private windowMoveEnded;
   private resizableChanged;
   private scheduleNextOperation;
   private getCurrentWindowState;
   private getCurrentResizableState;
   private registerDisplayStateHandler;
+  private startMovePolling;
+  private stopMovePolling;
+  private pollWindowPosition;
   private setPendingOp;
 }
