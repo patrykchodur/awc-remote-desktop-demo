@@ -48,15 +48,46 @@ resizableElement.addEventListener('change', () => {
 })
 
 const duringMoveElement = document.querySelector<HTMLSpanElement>('#duringMove')!;
+const contiguousMoveElement = document.querySelector<HTMLInputElement>('#contiguousMove')!;
+
 controller.onMoveStarted = () => {
   duringMoveElement.textContent = "True";
-}
+};
 controller.onMoveEnded = () => {
   duringMoveElement.textContent = "False";
-}
-controller.onExternalMoveEnded = () => {
-  window.opener.postMessage({ type: 'WAS_MOVED', screenX: window.screenX, screenY: window.screenY});
-}
+};
+
+const updateMoveHandlers = (contiguous: boolean) => {
+  if (contiguous) {
+    controller.onExternalMoveStarted = null;
+    controller.onExternalMoveEnded = null;
+    controller.onExternalMove = () => {
+      window.opener?.postMessage({
+        type: 'WAS_MOVED',
+        screenX: window.screenX,
+        screenY: window.screenY,
+      });
+    };
+  } else {
+    controller.onExternalMove = null;
+    controller.onExternalMoveStarted = () => {
+      duringMoveElement.textContent = "True";
+    };
+    controller.onExternalMoveEnded = () => {
+      duringMoveElement.textContent = "False";
+      window.opener?.postMessage({
+        type: 'WAS_MOVED',
+        screenX: window.screenX,
+        screenY: window.screenY,
+      });
+    };
+  }
+};
+
+contiguousMoveElement.addEventListener('change', () => {
+  updateMoveHandlers(contiguousMoveElement.checked);
+});
+updateMoveHandlers(contiguousMoveElement.checked);
 
 window.addEventListener('message', (event) => {
   const data = event.data;
